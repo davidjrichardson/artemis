@@ -1,0 +1,9 @@
+{
+	"token":"TOKEN_STRING_HERE",
+	"dbinfo": {
+		"dbname":"NAME_HERE",
+		"user":"USERNAME_HERE",
+		"host":"PROBABLY_LOCALHOST_HERE",
+		"password":"HUNTER2_HERE"
+	}
+}
