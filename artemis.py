@@ -1,43 +1,52 @@
-import json
+# import json
 import shlex
 
-import psycopg2
 from discord.ext import commands
+from sqlalchemy import create_engine
 
 from command import Command
+from config import CONFIG
 from karma import process_karma
 
-bot = commands.Bot(command_prefix=commands.when_mentioned_or('?'), description="Artemis: Rhiba's bot.")
-with open('creds.json') as data:
-    creds = json.load(data)
-with open('artemis_config.json') as data:
-    config = json.load(data)
-token = creds["token"]
-dbinfo = creds["dbinfo"]
-users = []
-# Connect to db and get superusers
-try:
-    connect_str = "dbname='{0}' user='{1}' host='{2}' password='{3}'".format(dbinfo["dbname"], dbinfo["user"],
-                                                                             dbinfo["host"], dbinfo["password"])
-    conn = psycopg2.connect(connect_str)
-    cursor = conn.cursor()
-    cursor.execute("""SELECT name FROM users WHERE is_superuser = True;""")
-    rows = cursor.fetchall()
-    superusers = [i[0] for i in rows]
-    cursor.execute("""SELECT name FROM users WHERE is_superuser = False;""")
-    rows = cursor.fetchall()
-    users = [i[0] for i in rows]
-    print("Loaded users and superusers.")
+from models import Base, User, Karma, KarmaReason
 
-except Exception as e:
-    print("Could not connect to db.")
-    print(e)
+bot = commands.Bot(command_prefix=commands.when_mentioned_or('?'), description="Artemis: Rhiba's bot.")
+token = CONFIG['DISCORD_TOKEN']
+logging = CONFIG['ENABLE_LOGGING']
+
+# Set up database connection config
+if CONFIG['DATABASE_CONNECTION']['USER'] and CONFIG['DATABASE_CONNECTION']['PASSWORD']:
+    db_user = '{user}:{password}@'.format(user=CONFIG['DATABASE_CONNECTION']['USER'],
+                                          password=CONFIG['DATABASE_CONNECTION']['PASSWORD'])
+elif CONFIG['DATABASE_CONNECTION']['USER']:
+    db_user = '{user}@'.format(user=CONFIG['DATABASE_CONNECTION']['USER'])
+else:
+    db_user = ''
+
+if CONFIG['DATABASE_CONNECTION']['PORT']:
+    db_port = ':{port}'.format(port=CONFIG['DATABASE_CONNECTION']['PORT'])
+else:
+    db_port = ''
+
+# Initialise the database
+if logging:
+    print('Initialising database connection for driver: {driver}'.format(driver=CONFIG['DATABASE_CONNECTION']['DRIVER']))
+db_engine = create_engine('{driver}://{user}{host}{port}'.format(
+    driver=CONFIG['DATABASE_CONNECTION']['DRIVER'],
+    user=db_user,
+    host=CONFIG['DATABASE_CONNECTION']['HOST'],
+    port=db_port
+), echo=logging)
+
+Base.metdata.create_all(db_engine)
+
 
 commands = dict([(cls.__name__, cls) for cls in Command.__subclasses__()])
 descriptions = dict([(cls.__name__, cls.desc()) for cls in Command.__subclasses__()])
 
 
 def check_auth(user):
+    # TODO: Refactor this to use SQLAlchemy
     for i in superusers:
         if i == user:
             return True

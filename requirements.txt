@@ -1,8 +1,12 @@
 aiohttp==1.0.5
 async-timeout==1.2.1
+certifi==2017.11.5
 chardet==3.0.4
 discord.py==0.16.8
+idna==2.6
 multidict==2.1.6
 psycopg2==2.7.1
-websockets==3.3
 requests==2.18.4
+SQLAlchemy==1.1.15
+urllib3==1.22
+websockets==3.3

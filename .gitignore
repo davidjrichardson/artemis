@@ -188,6 +188,7 @@ pip-selfcheck.json
 
 env/*
 creds.json
+config.py
 authed_users.json
 quick_add.sql
 k_schema.sql
