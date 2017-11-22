@@ -65,6 +65,19 @@ class TestKarmaParser(unittest.TestCase):
     def test_quoted_neutral_mp_with_reason(self):
         self.assertEqual(parse_message('"Foobar"-+ because baz'), [RawKarma(name='"Foobar"', op='-+', reason='baz')])
 
+    def test_simple_multiple_karma(self):
+        self.assertEqual(parse_message('Foobar++, Baz-- Blat+-'), [
+            RawKarma(name='Foobar', op='++', reason=None),
+            RawKarma(name='Baz', op='--', reason=None),
+            RawKarma(name='Blat', op='+-', reason=None)
+        ])
+
+    def test_simple_multiple_karma_with_some_reasons_and_quotes(self):
+        self.assertEqual(parse_message('Foobar++ because baz blat, "Hello world"--'), [
+            RawKarma(name='Foobar', op='++', reason='baz blat'),
+            RawKarma(name='"Hello world"', op='--', reason=None)
+        ])
+
     def test_karma_op_no_token(self):
         self.assertEqual(parse_message('++'), None)
 
