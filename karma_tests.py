@@ -84,7 +84,113 @@ class TestKarmaProcessor(unittest.TestCase):
                              KarmaTransaction(name='Baz', self_karma=False, net_karma=-1, reasons=[])
                          ])
 
-        # TODO: Create tests with reasons
+    def test_karma_negative_positive(self):
+        self.assertEqual(process_karma('Bar', [
+            RawKarma(name='Baz', op='--', reason=None),
+            RawKarma(name='Baz', op='++', reason=None)
+        ]), [
+                             KarmaTransaction(name='Baz', self_karma=False, net_karma=0, reasons=[])
+                         ])
+
+    def test_simple_positive_reason(self):
+        self.assertEqual(process_karma('Bar', [
+            RawKarma(name='Baz', op='++', reason='Foobar is baz')
+        ]), [
+                             KarmaTransaction(name='Baz', self_karma=False, net_karma=1, reasons=['Foobar is baz'])
+                         ])
+
+    def test_simple_negative_reason(self):
+        self.assertEqual(process_karma('Bar', [
+            RawKarma(name='Baz', op='--', reason='Foobar is baz')
+        ]), [
+                             KarmaTransaction(name='Baz', self_karma=False, net_karma=-1, reasons=['Foobar is baz'])
+                         ])
+
+    def test_simple_neutral_reason(self):
+        self.assertEqual(process_karma('Bar', [
+            RawKarma(name='Baz', op='+-', reason='Foobar is baz')
+        ]), [
+                             KarmaTransaction(name='Baz', self_karma=False, net_karma=0,
+                                              reasons=['Foobar is baz'])
+                         ])
+
+    def test_self_karma_single_reason(self):
+        self.assertEqual(process_karma('Bar', [
+            RawKarma(name='Bar', op='++', reason='Is awesome')
+        ]), [
+                             KarmaTransaction(name='Bar', self_karma=True, net_karma=0, reasons=[])
+                         ])
+
+    def test_self_karma_multiple_reason(self):
+        self.assertEqual(process_karma('Bar', [
+            RawKarma(name='Bar', op='++', reason='Is awesome'),
+            RawKarma(name='Bar', op='++', reason='Is awesome')
+        ]), [
+                             KarmaTransaction(name='Bar', self_karma=True, net_karma=0, reasons=[])
+                         ])
+
+    def test_self_karma_single_with_others_and_reasons(self):
+        self.assertEqual(process_karma('Bar', [
+            RawKarma(name='Bar', op='++', reason='Is awesome'),
+            RawKarma(name='Foo', op='++', reason='Is awesome too'),
+        ]), [
+                             KarmaTransaction(name='Bar', self_karma=True, net_karma=0, reasons=[]),
+                             KarmaTransaction(name='Foo', self_karma=False, net_karma=1, reasons=['Is awesome too'])
+                         ])
+
+    def test_karma_double_positive_reasons(self):
+        self.assertEqual(process_karma('Bar', [
+            RawKarma(name='Baz', op='++', reason='Foobar baz 1'),
+            RawKarma(name='Baz', op='++', reason='Foobar baz 2')
+        ]), [
+                             KarmaTransaction(name='Baz', self_karma=False, net_karma=1,
+                                              reasons=['Foobar baz 1', 'Foobar baz 2'])
+                         ])
+
+    def test_karma_double_negative_reasons(self):
+        self.assertEqual(process_karma('Bar', [
+            RawKarma(name='Baz', op='--', reason='Foobar baz 1'),
+            RawKarma(name='Baz', op='--', reason='Foobar baz 2')
+        ]), [
+                             KarmaTransaction(name='Baz', self_karma=False, net_karma=-1,
+                                              reasons=['Foobar baz 1', 'Foobar baz 2'])
+                         ])
+
+    def test_karma_double_neutral_reasons(self):
+        self.assertEqual(process_karma('Bar', [
+            RawKarma(name='Baz', op='-+', reason='Foobar baz 1'),
+            RawKarma(name='Baz', op='+-', reason='Foobar baz 2')
+        ]), [
+                             KarmaTransaction(name='Baz', self_karma=False, net_karma=0,
+                                              reasons=['Foobar baz 1', 'Foobar baz 2'])
+                         ])
+
+    def test_karma_positive_neutral_reasons(self):
+        self.assertEqual(process_karma('Bar', [
+            RawKarma(name='Baz', op='++', reason='Foobar baz 1'),
+            RawKarma(name='Baz', op='+-', reason='Foobar baz 2')
+        ]), [
+                             KarmaTransaction(name='Baz', self_karma=False, net_karma=1,
+                                              reasons=['Foobar baz 1', 'Foobar baz 2'])
+                         ])
+
+    def test_karma_negative_neutral_reasons(self):
+        self.assertEqual(process_karma('Bar', [
+            RawKarma(name='Baz', op='--', reason='Foobar baz 1'),
+            RawKarma(name='Baz', op='+-', reason='Foobar baz 2')
+        ]), [
+                             KarmaTransaction(name='Baz', self_karma=False, net_karma=-1,
+                                              reasons=['Foobar baz 1', 'Foobar baz 2'])
+                         ])
+
+    def test_karma_positive_negative_reasons(self):
+        self.assertEqual(process_karma('Bar', [
+            RawKarma(name='Baz', op='++', reason='Foobar baz 1'),
+            RawKarma(name='Baz', op='--', reason='Foobar baz 2')
+        ]), [
+                             KarmaTransaction(name='Baz', self_karma=False, net_karma=0,
+                                              reasons=['Foobar baz 1', 'Foobar baz 2'])
+                         ])
 
 
 class TestKarmaParser(unittest.TestCase):

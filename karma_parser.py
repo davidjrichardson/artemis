@@ -67,11 +67,9 @@ def process_karma(message_author: str, karma: List[RawKarma]):
         if len(self_karma) == len(raw_karma):
             return [KarmaTransaction(name=message_author, self_karma=True, net_karma=0, reasons=[])]
         else:
-            # TODO: Refactor this to put forward a self-karma transaction
             transactions.append(KarmaTransaction(name=message_author, self_karma=True, net_karma=0, reasons=[]))
             raw_karma = [x for x in raw_karma if x not in self_karma]
 
-    # TODO: Coalesce multiple karma operations
     # Reformat the karma info to be per-karma item rather than per-token
     karma_ops = dict()
     for item in raw_karma:
