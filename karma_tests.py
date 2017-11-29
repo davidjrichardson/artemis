@@ -1,34 +1,34 @@
 import unittest
 
-from karma_parser import parse_message, process_karma, RawKarma, KarmaTransaction
+from karma_parser import parse_message, create_transactions, RawKarma, KarmaTransaction
 
 
 class TestKarmaProcessor(unittest.TestCase):
     def test_empty(self):
-        self.assertEqual(process_karma('', []), None)
+        self.assertEqual(create_transactions('', []), None)
 
     def test_simple_positive(self):
-        self.assertEqual(process_karma('Baz', [RawKarma(name='Foobar', op='++', reason=None)]), [
+        self.assertEqual(create_transactions('Baz', [RawKarma(name='Foobar', op='++', reason=None)]), [
             KarmaTransaction(name='Foobar', self_karma=False, net_karma=1, reasons=[])
         ])
 
     def test_simple_negative(self):
-        self.assertEqual(process_karma('Baz', [RawKarma(name='Foobar', op='--', reason=None)]), [
+        self.assertEqual(create_transactions('Baz', [RawKarma(name='Foobar', op='--', reason=None)]), [
             KarmaTransaction(name='Foobar', self_karma=False, net_karma=-1, reasons=[])
         ])
 
     def test_simple_neutral(self):
-        self.assertEqual(process_karma('Baz', [RawKarma(name='Foobar', op='+-', reason=None)]), [
+        self.assertEqual(create_transactions('Baz', [RawKarma(name='Foobar', op='+-', reason=None)]), [
             KarmaTransaction(name='Foobar', self_karma=False, net_karma=0, reasons=[])
         ])
 
     def test_self_karma_single(self):
-        self.assertEqual(process_karma('Baz', [RawKarma(name='Baz', op='++', reason=None)]), [
+        self.assertEqual(create_transactions('Baz', [RawKarma(name='Baz', op='++', reason=None)]), [
             KarmaTransaction(name='Baz', self_karma=True, net_karma=0, reasons=[])
         ])
 
     def test_self_karma_multiple(self):
-        self.assertEqual(process_karma('Baz', [
+        self.assertEqual(create_transactions('Baz', [
             RawKarma(name='Baz', op='++', reason=None),
             RawKarma(name='Baz', op='++', reason=None)
         ]), [
@@ -36,7 +36,7 @@ class TestKarmaProcessor(unittest.TestCase):
                          ])
 
     def test_self_karma_single_with_others(self):
-        self.assertEqual(process_karma('Baz', [
+        self.assertEqual(create_transactions('Baz', [
             RawKarma(name='Baz', op='++', reason=None),
             RawKarma(name='Foobar', op='++', reason=None)
         ]), [
@@ -45,7 +45,7 @@ class TestKarmaProcessor(unittest.TestCase):
                          ])
 
     def test_karma_double_positive(self):
-        self.assertEqual(process_karma('Bar', [
+        self.assertEqual(create_transactions('Bar', [
             RawKarma(name='Baz', op='++', reason=None),
             RawKarma(name='Baz', op='++', reason=None)
         ]), [
@@ -53,7 +53,7 @@ class TestKarmaProcessor(unittest.TestCase):
                          ])
 
     def test_karma_double_negative(self):
-        self.assertEqual(process_karma('Bar', [
+        self.assertEqual(create_transactions('Bar', [
             RawKarma(name='Baz', op='--', reason=None),
             RawKarma(name='Baz', op='--', reason=None)
         ]), [
@@ -61,7 +61,7 @@ class TestKarmaProcessor(unittest.TestCase):
                          ])
 
     def test_karma_double_neutral(self):
-        self.assertEqual(process_karma('Bar', [
+        self.assertEqual(create_transactions('Bar', [
             RawKarma(name='Baz', op='+-', reason=None),
             RawKarma(name='Baz', op='-+', reason=None)
         ]), [
@@ -69,7 +69,7 @@ class TestKarmaProcessor(unittest.TestCase):
                          ])
 
     def test_karma_positive_neutral(self):
-        self.assertEqual(process_karma('Bar', [
+        self.assertEqual(create_transactions('Bar', [
             RawKarma(name='Baz', op='++', reason=None),
             RawKarma(name='Baz', op='+-', reason=None)
         ]), [
@@ -77,7 +77,7 @@ class TestKarmaProcessor(unittest.TestCase):
                          ])
 
     def test_karma_negative_neutral(self):
-        self.assertEqual(process_karma('Bar', [
+        self.assertEqual(create_transactions('Bar', [
             RawKarma(name='Baz', op='--', reason=None),
             RawKarma(name='Baz', op='+-', reason=None)
         ]), [
@@ -85,7 +85,7 @@ class TestKarmaProcessor(unittest.TestCase):
                          ])
 
     def test_karma_negative_positive(self):
-        self.assertEqual(process_karma('Bar', [
+        self.assertEqual(create_transactions('Bar', [
             RawKarma(name='Baz', op='--', reason=None),
             RawKarma(name='Baz', op='++', reason=None)
         ]), [
@@ -93,21 +93,21 @@ class TestKarmaProcessor(unittest.TestCase):
                          ])
 
     def test_simple_positive_reason(self):
-        self.assertEqual(process_karma('Bar', [
+        self.assertEqual(create_transactions('Bar', [
             RawKarma(name='Baz', op='++', reason='Foobar is baz')
         ]), [
                              KarmaTransaction(name='Baz', self_karma=False, net_karma=1, reasons=['Foobar is baz'])
                          ])
 
     def test_simple_negative_reason(self):
-        self.assertEqual(process_karma('Bar', [
+        self.assertEqual(create_transactions('Bar', [
             RawKarma(name='Baz', op='--', reason='Foobar is baz')
         ]), [
                              KarmaTransaction(name='Baz', self_karma=False, net_karma=-1, reasons=['Foobar is baz'])
                          ])
 
     def test_simple_neutral_reason(self):
-        self.assertEqual(process_karma('Bar', [
+        self.assertEqual(create_transactions('Bar', [
             RawKarma(name='Baz', op='+-', reason='Foobar is baz')
         ]), [
                              KarmaTransaction(name='Baz', self_karma=False, net_karma=0,
@@ -115,14 +115,14 @@ class TestKarmaProcessor(unittest.TestCase):
                          ])
 
     def test_self_karma_single_reason(self):
-        self.assertEqual(process_karma('Bar', [
+        self.assertEqual(create_transactions('Bar', [
             RawKarma(name='Bar', op='++', reason='Is awesome')
         ]), [
                              KarmaTransaction(name='Bar', self_karma=True, net_karma=0, reasons=[])
                          ])
 
     def test_self_karma_multiple_reason(self):
-        self.assertEqual(process_karma('Bar', [
+        self.assertEqual(create_transactions('Bar', [
             RawKarma(name='Bar', op='++', reason='Is awesome'),
             RawKarma(name='Bar', op='++', reason='Is awesome')
         ]), [
@@ -130,7 +130,7 @@ class TestKarmaProcessor(unittest.TestCase):
                          ])
 
     def test_self_karma_single_with_others_and_reasons(self):
-        self.assertEqual(process_karma('Bar', [
+        self.assertEqual(create_transactions('Bar', [
             RawKarma(name='Bar', op='++', reason='Is awesome'),
             RawKarma(name='Foo', op='++', reason='Is awesome too'),
         ]), [
@@ -139,7 +139,7 @@ class TestKarmaProcessor(unittest.TestCase):
                          ])
 
     def test_karma_double_positive_reasons(self):
-        self.assertEqual(process_karma('Bar', [
+        self.assertEqual(create_transactions('Bar', [
             RawKarma(name='Baz', op='++', reason='Foobar baz 1'),
             RawKarma(name='Baz', op='++', reason='Foobar baz 2')
         ]), [
@@ -148,7 +148,7 @@ class TestKarmaProcessor(unittest.TestCase):
                          ])
 
     def test_karma_double_negative_reasons(self):
-        self.assertEqual(process_karma('Bar', [
+        self.assertEqual(create_transactions('Bar', [
             RawKarma(name='Baz', op='--', reason='Foobar baz 1'),
             RawKarma(name='Baz', op='--', reason='Foobar baz 2')
         ]), [
@@ -157,7 +157,7 @@ class TestKarmaProcessor(unittest.TestCase):
                          ])
 
     def test_karma_double_neutral_reasons(self):
-        self.assertEqual(process_karma('Bar', [
+        self.assertEqual(create_transactions('Bar', [
             RawKarma(name='Baz', op='-+', reason='Foobar baz 1'),
             RawKarma(name='Baz', op='+-', reason='Foobar baz 2')
         ]), [
@@ -166,7 +166,7 @@ class TestKarmaProcessor(unittest.TestCase):
                          ])
 
     def test_karma_positive_neutral_reasons(self):
-        self.assertEqual(process_karma('Bar', [
+        self.assertEqual(create_transactions('Bar', [
             RawKarma(name='Baz', op='++', reason='Foobar baz 1'),
             RawKarma(name='Baz', op='+-', reason='Foobar baz 2')
         ]), [
@@ -175,7 +175,7 @@ class TestKarmaProcessor(unittest.TestCase):
                          ])
 
     def test_karma_negative_neutral_reasons(self):
-        self.assertEqual(process_karma('Bar', [
+        self.assertEqual(create_transactions('Bar', [
             RawKarma(name='Baz', op='--', reason='Foobar baz 1'),
             RawKarma(name='Baz', op='+-', reason='Foobar baz 2')
         ]), [
@@ -184,7 +184,7 @@ class TestKarmaProcessor(unittest.TestCase):
                          ])
 
     def test_karma_positive_negative_reasons(self):
-        self.assertEqual(process_karma('Bar', [
+        self.assertEqual(create_transactions('Bar', [
             RawKarma(name='Baz', op='++', reason='Foobar baz 1'),
             RawKarma(name='Baz', op='--', reason='Foobar baz 2')
         ]), [

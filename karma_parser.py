@@ -49,7 +49,7 @@ def parse_message(message: str):
         return None
 
 
-def process_karma(message_author: str, karma: List[RawKarma]):
+def create_transactions(message_author: str, karma: List[RawKarma]):
     # Cover the case when nothing has been given to the function.
     if not message_author or not karma:
         return None
